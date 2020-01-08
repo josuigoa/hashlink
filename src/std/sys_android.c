@@ -65,6 +65,7 @@ static jmethodID hl_java_method_id_get_context;
 /* Paths */
 static char *hl_android_external_files_path = NULL;
 static char *hl_android_internal_files_path = NULL;
+static char *hl_android_obb_files_path = NULL;
 
 /* Function to retrieve JNI environment, and dealing with threading */
 static JNIEnv* hl_android_jni_get_env(void)
@@ -227,11 +228,23 @@ static const char* hl_sys_android_get_internal_storage_path(void)
 	return hl_android_internal_files_path;
 }
 
+static const char* hl_sys_android_get_obb_storage_path(void)
+{
+	/* Internal storage is always available */
+	if (!hl_android_obb_files_path) {
+		hl_android_obb_files_path = hl_sys_android_get_absolute_path_from("getObbDir", "()Ljava/io/File;");
+	}
+
+	return hl_android_obb_files_path;
+}
+
 const char *hl_sys_special( const char *key ) { 
 	if (strcmp(key, "android_external_storage_path")==0)
 		return hl_sys_android_get_external_storage_path();
 	else if (strcmp(key, "android_internal_storage_path")==0)
 		return hl_sys_android_get_internal_storage_path();
+	else if (strcmp(key, "android_obb_storage_path")==0)
+		return hl_sys_android_get_obb_storage_path();
 	else
 		hl_error("Unknown sys_special key");
 	return NULL;
