@@ -250,6 +250,42 @@ const char *hl_sys_special( const char *key ) {
 	return NULL;
 }
 
+bool hl_android_alert_dialog_visit_web( const char *title, const char *message, const char *buyButtonText, const char *websiteUrl ) {
+	jmethodID mid;
+	jobject context;
+
+	JNIEnv *env = hl_android_jni_get_env();
+	if (!env) {
+		LOGE("Couldn't get Android JNIEnv !");
+		return false;
+	}
+
+	context = (*env)->CallStaticObjectMethod(env, hl_java_activity_class, hl_java_method_id_get_context);
+	if (!context) {
+		LOGE("Couldn't get Android context!");
+		return false;
+	}
+
+	const char *method = "createAlertDialogVisitWebsite";
+	const char *signature = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V";
+	mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), method, signature);
+	
+	jstring jtitle = (*env)->NewStringUTF(env, title);
+	jstring jmessage = (*env)->NewStringUTF(env, message);
+	jstring jbuyButtonText = (*env)->NewStringUTF(env, buyButtonText);
+	jstring jwebsiteUrl = (*env)->NewStringUTF(env, websiteUrl);
+	
+	(*env)->CallVoidMethod(env, context, mid, jtitle, jmessage, jbuyButtonText, jwebsiteUrl);
+	
+	(*env)->DeleteLocalRef(env, jtitle);
+	(*env)->DeleteLocalRef(env, jmessage);
+	(*env)->DeleteLocalRef(env, jbuyButtonText);
+	(*env)->DeleteLocalRef(env, jwebsiteUrl);
+
+	return true;
+}
+
 DEFINE_PRIM(_BYTES, sys_special, _BYTES);
+DEFINE_PRIM(_BOOL, android_alert_dialog_visit_web, _BYTES _BYTES _BYTES _BYTES);
 
 #endif
